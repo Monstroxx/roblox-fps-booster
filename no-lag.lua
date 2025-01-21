@@ -194,29 +194,47 @@ local function updatePing()
 end
 spawn(updatePing)
 
-whiteScreenToggle.MouseButton1Click:Connect(function()
-	whiteScreenEnabled = not whiteScreenEnabled
-	whiteScreenToggle.Text = "White Screen: " .. (whiteScreenEnabled and "ON" or "OFF")
-	createWhiteScreenUI(whiteScreenEnabled)
-end)
+-- Function for auto rejoin
+local function startAutoRejoin(rejoinTime)
+	spawn(function()
+		wait(rejoinTime * 60) -- Wait the specified time in seconds
+		game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+	end)
+end
 
-autoRejoinToggle.MouseButton1Click:Connect(function()
-	autoRejoinEnabled = not autoRejoinEnabled
-	autoRejoinToggle.Text = "Auto Rejoin: " .. (autoRejoinEnabled and "ON" or "OFF")
-end)
+-- Use default value at game start if auto-rejoin is activated
+if autoRejoinEnabled then
+	startAutoRejoin(30) -- Start auto-rejoin with default value 30 minutes
+end
 
+-- Input field handler for manual changes
 rejoinTimeInput.FocusLost:Connect(function(enterPressed)
 	if enterPressed then
 		local rejoinTime = tonumber(rejoinTimeInput.Text)
-		if rejoinTime and rejoinTime > 0 and autoRejoinEnabled then
-			wait(rejoinTime * 60)
-			game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-		else
-			rejoinTimeInput.Text = "30"
+		if not rejoinTime or rejoinTime <= 0 then
+			rejoinTimeInput.Text = "30" -- Set the field back to the default value
+			rejoinTime = 30
+		end
+
+		if autoRejoinEnabled then
+			startAutoRejoin(rejoinTime) -- Start auto rejoin with specified time
 		end
 	end
 end)
 
+-- Toggle für Auto-Rejoin
+autoRejoinToggle.MouseButton1Click:Connect(function()
+	autoRejoinEnabled = not autoRejoinEnabled
+	autoRejoinToggle.Text = "Auto Rejoin: " .. (autoRejoinEnabled and "ON" or "OFF")
+
+	-- If Auto-Rejoin is activated, it starts immediately with the current value
+	if autoRejoinEnabled then
+		local rejoinTime = tonumber(rejoinTimeInput.Text) or 30 -- Nutze den aktuellen Wert oder Standard
+		startAutoRejoin(rejoinTime)
+	end
+end)
+
+createWhiteScreenUI(true) -- White screen enabled on join
 -- Initial execution of functions on join
 optimizePerformance()
-createWhiteScreenUI(true) -- White screen enabled on join
+
