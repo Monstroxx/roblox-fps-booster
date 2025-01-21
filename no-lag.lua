@@ -68,12 +68,6 @@ local function createWhiteScreenUI(isEnabled)
 	screenGui.Enabled = isEnabled
 end
 
--- Function to rejoin the game after a specified time
-local function rejoinAfterTime(rejoinTime)
-	wait(rejoinTime * 60) -- Convert minutes to seconds
-	game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-end
-
 -- Create UI with toggles, performance stats, and input field
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -193,6 +187,12 @@ local function updatePing()
 	end
 end
 spawn(updatePing)
+
+whiteScreenToggle.MouseButton1Click:Connect(function()
+	whiteScreenEnabled = not whiteScreenEnabled
+	whiteScreenToggle.Text = "White Screen: " .. (whiteScreenEnabled and "ON" or "OFF")
+	createWhiteScreenUI(whiteScreenEnabled)
+end)
 
 -- Function for auto rejoin
 local function startAutoRejoin(rejoinTime)
