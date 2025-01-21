@@ -114,4 +114,4 @@ end)
 
 -- Initial execution of functions
 optimizePerformance()
-enableWhiteMode(whiteScreenEnabled
+enableWhiteMode(whiteScreenEnabled)
