@@ -1,3 +1,4 @@
+-- Function to optimize game settings for better performance
 local function optimizePerformance()
 	-- Reduce graphics quality
 	settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
@@ -43,46 +44,34 @@ local function optimizePerformance()
 	end)
 end
 
--- Function to make a frame draggable
-local function makeDraggable(frame)
-	local dragging = false
-	local dragInput, dragStart, startPos
+-- Function to create a full-screen white UI
+local function createWhiteScreenUI(isEnabled)
+	local player = game.Players.LocalPlayer
+	local screenGui = player.PlayerGui:FindFirstChild("WhiteScreenGui")
 
-	local function update(input)
-		local delta = input.Position - dragStart
-		frame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
+	if not screenGui then
+		screenGui = Instance.new("ScreenGui")
+		screenGui.Name = "WhiteScreenGui"
+		screenGui.IgnoreGuiInset = true
+		screenGui.DisplayOrder = 10 -- Ensure this UI is on top of others
+		screenGui.Parent = player.PlayerGui
+
+		local frame = Instance.new("Frame")
+		frame.Name = "WhiteFrame"
+		frame.Parent = screenGui
+		frame.Size = UDim2.new(1, 0, 1, 0) -- Full-screen size
+		frame.Position = UDim2.new(0, 0, 0, 0)
+		frame.BackgroundColor3 = Color3.new(1, 1, 1) -- White color
+		frame.BorderSizePixel = 0 -- Remove the border, if any
 	end
 
-	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
+	screenGui.Enabled = isEnabled
+end
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-				end
-			end)
-		end
-	end)
-
-	frame.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			dragInput = input
-		end
-	end)
-
-	game:GetService("UserInputService").InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			update(input)
-		end
-	end)
+-- Function to rejoin the game after a specified time
+local function rejoinAfterTime(rejoinTime)
+	wait(rejoinTime * 60) -- Convert minutes to seconds
+	game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
 end
 
 -- Create UI with toggles, performance stats, and input field
@@ -97,9 +86,6 @@ frame.Size = UDim2.new(0, 250, 0, 200)
 frame.Position = UDim2.new(0.5, -125, 0.5, -100)
 frame.BackgroundColor3 = Color3.new(0.8, 0.8, 0.8)
 frame.Active = true
-
--- Apply draggable functionality
-makeDraggable(frame)
 
 local whiteScreenToggle = Instance.new("TextButton", frame)
 whiteScreenToggle.Size = UDim2.new(0, 230, 0, 30)
@@ -157,18 +143,14 @@ local function formatTimePlayed(seconds)
 		return string.format("%ds", secs)
 	end
 end
+
 -- Time Played Tracker
-local timePlayed = 0
 RunService.Heartbeat:Connect(function(deltaTime)
 	timePlayed += deltaTime
 	timePlayedLabel.Text = "Time Played: " .. formatTimePlayed(math.floor(timePlayed))
 end)
 
 -- FPS Tracker
-local RunService = game:GetService("RunService")
-local fps = 0
-local lastUpdate = tick()
-
 RunService.RenderStepped:Connect(function(deltaTime)
 	fps = math.floor(1 / deltaTime)
 	if tick() - lastUpdate >= 1 then
@@ -190,6 +172,7 @@ spawn(updatePing)
 whiteScreenToggle.MouseButton1Click:Connect(function()
 	whiteScreenEnabled = not whiteScreenEnabled
 	whiteScreenToggle.Text = "White Screen: " .. (whiteScreenEnabled and "ON" or "OFF")
+	createWhiteScreenUI(whiteScreenEnabled)
 end)
 
 autoRejoinToggle.MouseButton1Click:Connect(function()
@@ -211,3 +194,4 @@ end)
 
 -- Initial execution of functions on join
 optimizePerformance()
+createWhiteScreenUI(true) -- White screen enabled on join
