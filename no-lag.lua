@@ -87,6 +87,31 @@ frame.Position = UDim2.new(0.5, -125, 0.5, -100)
 frame.BackgroundColor3 = Color3.new(0.8, 0.8, 0.8)
 frame.Active = true
 
+-- Drag functionality implementation
+local dragging, dragInput, dragStart, startPos
+frame.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+frame.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
+
 local whiteScreenToggle = Instance.new("TextButton", frame)
 whiteScreenToggle.Size = UDim2.new(0, 230, 0, 30)
 whiteScreenToggle.Position = UDim2.new(0, 10, 0, 10)
@@ -192,7 +217,6 @@ rejoinTimeInput.FocusLost:Connect(function(enterPressed)
 	end
 end)
 
-createWhiteScreenUI(true) -- White screen enabled on join
 -- Initial execution of functions on join
 optimizePerformance()
-
+createWhiteScreenUI(true) -- White screen enabled on join
