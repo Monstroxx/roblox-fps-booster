@@ -192,6 +192,7 @@ rejoinTimeInput.FocusLost:Connect(function(enterPressed)
 	end
 end)
 
+createWhiteScreenUI(true) -- White screen enabled on join
 -- Initial execution of functions on join
 optimizePerformance()
-createWhiteScreenUI(true) -- White screen enabled on join
+
