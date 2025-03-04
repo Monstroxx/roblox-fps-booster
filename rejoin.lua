@@ -6,6 +6,10 @@ local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+
+-- Serveradresse für Python-Kommunikation
+local serverUrl = "http://127.0.0.1:5000/heartbeat"
 
 -- UI-Schutz mit gethui()
 local function getSafeUI()
@@ -40,6 +44,22 @@ local function updateTimer()
         countdown = countdown - 1
     end
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
+end
+
+-- Funktion zum Senden eines Herzschlags
+local function sendHeartbeat()
+    local success, response = pcall(function()
+        return HttpService:PostAsync(serverUrl, "{\"status\": \"alive\"}", Enum.HttpContentType.ApplicationJson)
+    end)
+    if not success then
+        warn("[Monitor]: Verbindung zu Python fehlgeschlagen!")
+    end
+end
+
+-- Starte regelmäßigen Herzschlag
+while true do
+    sendHeartbeat()
+    task.wait(10) -- Alle 10 Sekunden ein Signal senden
 end
 
 task.spawn(updateTimer)
