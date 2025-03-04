@@ -6,10 +6,6 @@ local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
-
--- Serveradresse für Python-Kommunikation
-local serverUrl = "http://127.0.0.1:5000/heartbeat"
 
 -- UI-Schutz mit gethui()
 local function getSafeUI()
@@ -46,20 +42,16 @@ local function updateTimer()
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
 end
 
--- Funktion zum Senden eines Herzschlags
-local function sendHeartbeat()
-    local success, response = pcall(function()
-        return HttpService:PostAsync(serverUrl, "{\"status\": \"alive\"}", Enum.HttpContentType.ApplicationJson)
-    end)
-    if not success then
-        warn("[Monitor]: Verbindung zu Python fehlgeschlagen!")
+-- Lua script for Roblox (client-side)
+local function notify_crash_or_kick()
+    local file = io.open("game_status.txt", "w")
+    if file then
+        file:write("crashed")
+        file:close()
     end
 end
 
--- Starte regelmäßigen Herzschlag
-while true do
-    sendHeartbeat()
-    task.wait(10) -- Alle 10 Sekunden ein Signal senden
-end
+-- Call this function when the game crashes or gets kicked
+notify_crash_or_kick()
 
 task.spawn(updateTimer)
