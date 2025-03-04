@@ -7,9 +7,6 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 
--- Lua-Skript in Roblox (so weit es geht, könnte nicht direkt funktionieren auf Android)
-local filePath = "playerData.json"
-
 -- UI-Schutz mit gethui()
 local function getSafeUI()
     return gethui() or CoreGui
@@ -45,22 +42,29 @@ local function updateTimer()
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
 end
 
--- Funktion, um die Datei zu schreiben
-local function writeCrashSignal()
+local player = game.Players.LocalPlayer
+local filePath = "playerData.json"
+local lastUpdateTime = tick()
+
+
+-- Funktion, um regelmäßig die Datei zu aktualisieren
+local function updatePlayerData()
     local playerData = {
-        status = "crashed",
+        status = "active",
         placeId = game.PlaceId,
-        playerName = game.Players.LocalPlayer.Name
+        playerName = player.Name,
+        lastUpdate = tick()
     }
 
-    -- Hier speichern wir die Datei über externe Mechanismen (z.B. via Emulator oder Tools)
+    -- Die Datei regelmäßig überschreiben (nur zu Demonstrationszwecken, funktioniert nur auf PC, nicht auf Android)
     local jsonData = game:GetService("HttpService"):JSONEncode(playerData)
-    writeToFile(filePath, jsonData)  -- Diese Funktion müsste von extern kommen, wie ein Emulator
+    writeToFile(filePath, jsonData)  -- Ersetzt durch eine Methode zum Speichern der Datei auf deinem PC
 end
 
--- Wenn Roblox abstürzt oder der Spieler gekickt wird
-game:BindToClose(function()
-    writeCrashSignal()
-end)
+-- Update alle 5 Sekunden
+while true do
+    updatePlayerData()
+    wait(5)  -- Alle 5 Sekunden aktualisieren
+end
 
 task.spawn(updateTimer)
