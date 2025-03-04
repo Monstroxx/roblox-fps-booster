@@ -7,6 +7,10 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 
+local HttpService = game:GetService("HttpService")
+local fileName = "crash_signal.json"
+local crashSignal = {status = "crashed"}
+
 -- UI-Schutz mit gethui()
 local function getSafeUI()
     return gethui() or CoreGui
@@ -43,15 +47,18 @@ local function updateTimer()
 end
 
 -- Lua script for Roblox (client-side)
-local function notify_crash_or_kick()
-    local file = io.open("game_status.txt", "w")
-    if file then
-        file:write("crashed")
-        file:close()
-    end
+-- Funktion, um die Datei zu schreiben
+local function writeCrashSignal()
+    local jsonData = HttpService:JSONEncode(crashSignal)
+    -- Angenommen, du hast eine API, die mit Python kommuniziert, oder speicherst lokal
+    -- Es gibt in Roblox keine direkte Möglichkeit, auf Dateien zuzugreifen
+    -- Dies hier ist ein Platzhalter für das Konzept.
+    HttpService:PostAsync("http://localhost/crash_signal", jsonData)
 end
 
--- Call this function when the game crashes or gets kicked
-notify_crash_or_kick()
+-- Crash-Kontrolle: Wenn der Spieler gekickt wird, senden wir das Signal
+game:BindToClose(function()
+    writeCrashSignal()
+end)
 
 task.spawn(updateTimer)
