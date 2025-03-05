@@ -1,5 +1,5 @@
--- Auto-Rejoin Script mit verstecktem UI
--- Zeigt die verbleibende Zeit bis zum Rejoin an
+-- Auto-Rejoin Script mit verstecktem UI & Datei-Heartbeat
+-- Zeigt die verbleibende Zeit bis zum Rejoin an und schreibt eine Datei für Python
 
 -- Dienste
 local TeleportService = game:GetService("TeleportService")
@@ -31,36 +31,32 @@ label.TextColor3 = Color3.new(1, 1, 1)
 label.BackgroundTransparency = 1
 label.Parent = frame
 
+-- Speicherpfad (Android)
+local filePath = "roblox_heartbeat.txt"
+
 -- Countdown & Auto-Rejoin
 local countdown = 1080 -- 18 Minuten in Sekunden
 local function updateTimer()
     while countdown > 0 do
-        label.Text = "Rejoin in: " .. countdown .. "s"
+        label.Text = "Rejoin in: " .. countdown .. "s | Heartbeat: ✅"
+        sendHeartbeat()
         task.wait(1)
         countdown = countdown - 1
     end
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
 end
 
-
-
--- Speicherpfad (Android)
-local filePath = "roblox_heartbeat.txt"
-
 -- Funktion zum Schreiben der Herzschlag-Datei
-local function sendHeartbeat()
+function sendHeartbeat()
     local success, err = pcall(function()
-        writefile(filePath, tostring(os.time()))
+        local data = os.time() .. " " .. tostring(game.PlaceId)
+        writefile(filePath, data)
     end)
     if not success then
         warn("[Monitor]: Konnte Herzschlag nicht schreiben: " .. tostring(err))
+        label.Text = "Rejoin in: " .. countdown .. "s | Heartbeat: ❌"
     end
 end
 
--- Starte regelmäßigen Herzschlag
-while true do
-    sendHeartbeat()
-    task.wait(10) -- Alle 10 Sekunden schreiben
-end
-
+-- Starte Herzschlag und Countdown
 task.spawn(updateTimer)
