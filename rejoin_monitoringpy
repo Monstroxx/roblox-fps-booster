@@ -1,0 +1,35 @@
+import time
+import os
+
+heartbeat_file = "roblox_heartbeat.txt"
+
+# Funktion zum Überprüfen des Herzschlags
+def monitor_roblox():
+    while True:
+        time.sleep(15)
+        if not os.path.exists(heartbeat_file):
+            print("[Monitor]: Keine Herzschlag-Datei gefunden! Starte Roblox neu...")
+            restart_roblox()
+        else:
+            with open(heartbeat_file, "r") as file:
+                content = file.read().strip().split(" ")
+                if len(content) < 2:
+                    print("[Monitor]: Ungültige Datei! Starte Roblox neu...")
+                    restart_roblox()
+                    continue
+                
+                last_update = int(content[0])
+                place_id = content[1]
+                
+                if time.time() - last_update > 60:
+                    print("[Monitor]: Herzschlag zu alt! Starte Roblox neu...")
+                    restart_roblox(place_id)
+
+# Funktion zum Neustarten von Roblox mit Teleport-Link
+def restart_roblox(place_id):
+    os.system("am force-stop com.roblox.client")  # Roblox stoppen
+    time.sleep(3)
+    os.system(f"am start -a android.intent.action.VIEW -d roblox://placeId={place_id}")  # Direkt ins Spiel joinen
+
+if __name__ == "__main__":
+    monitor_roblox()
