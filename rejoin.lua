@@ -42,29 +42,25 @@ local function updateTimer()
     TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
 end
 
-local player = game.Players.LocalPlayer
-local filePath = "playerData.json"
-local lastUpdateTime = tick()
 
 
--- Funktion, um regelmäßig die Datei zu aktualisieren
-local function updatePlayerData()
-    local playerData = {
-        status = "active",
-        placeId = game.PlaceId,
-        playerName = player.Name,
-        lastUpdate = tick()
-    }
+-- Speicherpfad (Android)
+local filePath = "roblox_heartbeat.txt"
 
-    -- Die Datei regelmäßig überschreiben (nur zu Demonstrationszwecken, funktioniert nur auf PC, nicht auf Android)
-    local jsonData = game:GetService("HttpService"):JSONEncode(playerData)
-    writeToFile(filePath, jsonData)  -- Ersetzt durch eine Methode zum Speichern der Datei auf deinem PC
+-- Funktion zum Schreiben der Herzschlag-Datei
+local function sendHeartbeat()
+    local success, err = pcall(function()
+        writefile(filePath, tostring(os.time()))
+    end)
+    if not success then
+        warn("[Monitor]: Konnte Herzschlag nicht schreiben: " .. tostring(err))
+    end
 end
 
--- Update alle 5 Sekunden
+-- Starte regelmäßigen Herzschlag
 while true do
-    updatePlayerData()
-    wait(5)  -- Alle 5 Sekunden aktualisieren
+    sendHeartbeat()
+    task.wait(10) -- Alle 10 Sekunden schreiben
 end
 
 task.spawn(updateTimer)
