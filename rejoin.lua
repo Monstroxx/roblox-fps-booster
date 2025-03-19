@@ -35,7 +35,7 @@ label.Parent = frame
 local filePath = "roblox_heartbeat.txt"
 
 -- Countdown & Auto-Rejoin
-local countdown = 1080 -- 18 Minuten in Sekunden
+local countdown = 60 * 7 -- 18 Minuten in Sekunden
 local function updateTimer()
     while countdown > 0 do
         label.Text = "Rejoin in: " .. countdown .. "s | Heartbeat: ✅"
