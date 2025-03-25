@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /storage/emulated/0/{put_in_your_execuator}/Workspace
+cd path
 python rejoin_monitoring.py
